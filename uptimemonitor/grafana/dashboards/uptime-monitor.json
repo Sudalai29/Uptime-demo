@@ -1,0 +1,75 @@
+{
+  "title": "Uptime Monitor",
+  "uid": "uptime-monitor-main",
+  "timezone": "browser",
+  "refresh": "15s",
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Monitors Registered",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "uptime_monitors_registered_total", "legendFormat": "Total" }],
+      "options": { "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] } } }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Nodes Online",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(uptime_monitor_up)", "legendFormat": "Online" }],
+      "options": { "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Nodes Down",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(uptime_monitor_up == 0) or vector(0)", "legendFormat": "Down" }],
+      "options": { "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } }
+    },
+    {
+      "id": 4, "type": "stat", "title": "Checks Per Minute",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "rate(uptime_checks_total[5m]) * 60", "legendFormat": "checks/min" }],
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "decimals": 1 } }
+    },
+    {
+      "id": 5, "type": "stat", "title": "Alerts Sent",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(uptime_alerts_sent_total)", "legendFormat": "Alerts" }],
+      "options": { "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }] } } }
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Monitor Status (1=UP, 0=DOWN)",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 7 },
+      "targets": [{ "expr": "uptime_monitor_up", "legendFormat": "{{monitor_name}}" }],
+      "fieldConfig": { "defaults": { "min": 0, "max": 1, "custom": { "lineWidth": 2 } } }
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Response Time (ms) per Monitor",
+      "gridPos": { "x": 0, "y": 11, "w": 24, "h": 8 },
+      "targets": [{ "expr": "rate(uptime_check_duration_ms_sum[5m]) / rate(uptime_check_duration_ms_count[5m])", "legendFormat": "{{monitor_name}}" }],
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "lineWidth": 2 } } }
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "Checks Total Rate",
+      "gridPos": { "x": 0, "y": 19, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "rate(uptime_checks_total{status='up'}[5m])",   "legendFormat": "UP checks/s" },
+        { "expr": "rate(uptime_checks_total{status='down'}[5m])", "legendFormat": "DOWN checks/s" }
+      ]
+    },
+    {
+      "id": 9, "type": "timeseries", "title": "Response Time Percentiles (p50/p90/p99)",
+      "gridPos": { "x": 12, "y": 19, "w": 12, "h": 7 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(uptime_check_duration_ms_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.90, rate(uptime_check_duration_ms_bucket[5m]))", "legendFormat": "p90" },
+        { "expr": "histogram_quantile(0.99, rate(uptime_check_duration_ms_bucket[5m]))", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms" } }
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}
