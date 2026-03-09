@@ -1,0 +1,111 @@
+version: "3.9"
+
+services:
+
+  # ── Frontend (React + Vite) ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: uptime-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://api:8000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+    depends_on:
+      - api
+    networks:
+      - uptime-net
+
+  # ── FastAPI Backend ────────────────────────────────────
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: uptime-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MONITORS_TABLE=uptime-monitors
+      - CHECKS_TABLE=uptime-checks
+      - AWS_REGION=us-east-1
+      - LOCAL_DYNAMO_URL=http://dynamodb-local:8001
+      - LOCAL_MODE=true
+      - CHECK_INTERVAL_MINUTES=1
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+    depends_on:
+      - dynamodb-local
+    volumes:
+      - ./app:/home/appuser/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - uptime-net
+
+  # ── DynamoDB Local ─────────────────────────────────────
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: uptime-dynamodb
+    ports:
+      - "8001:8001"
+    command: "-jar DynamoDBLocal.jar -sharedDb -port 8001"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8001 && echo -e 'GET / HTTP/1.0\\r\\n' >&3 && cat <&3 | grep -q 'HTTP' && exit 0 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - uptime-net
+
+  # ── Prometheus ─────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: uptime-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"   # keep 7 days of data
+      - "--web.enable-lifecycle"              # allows hot-reload via POST /-/reload
+    depends_on:
+      - api
+    networks:
+      - uptime-net
+
+  # ── Grafana ────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: uptime-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=cyberpunk     # change this in prod
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/uptime-monitor.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - uptime-net
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  uptime-net:
+    driver: bridge
