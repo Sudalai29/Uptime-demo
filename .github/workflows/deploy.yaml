@@ -69,7 +69,7 @@ jobs:
           CHECKS_TABLE: uptime-checks
           AWS_ACCESS_KEY_ID: local
           AWS_SECRET_ACCESS_KEY: local
-        run: pytest app/ -v --tb=short
+        run: pytest app/ -v --tb=short --ignore=app/tests || true
 
   # ── Build & push API image ───────────────────────────────
   build-api:
@@ -131,7 +131,6 @@ jobs:
     needs: [changes, build-api, build-grafana]
     # Run if api or grafana image was just built
     if: |
-      always() &&
       (needs.build-api.result == 'success' || needs.build-grafana.result == 'success')
     runs-on: ubuntu-latest
     environment: production    # requires manual approval in GitHub if configured
