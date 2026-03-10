@@ -38,7 +38,7 @@ WORKDIR /home/appuser
 COPY --from=builder /install /usr/local
 
 # Copy app source
-COPY --chown=appuser:appuser app/ .
+COPY --chown=appuser:appuser app/ ./app/
 
 USER appuser
 
