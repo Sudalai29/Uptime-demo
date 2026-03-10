@@ -1,0 +1,17 @@
+# Copy this to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit real values.
+
+aws_region  = "us-east-1"
+domain_name = "yourdomain.com"
+alert_email = "you@youremail.com"
+
+# Set via CI/CD secret — do not put real password here
+grafana_admin_password = "changeme"
+
+# ECS schedule (UTC) — 8am start, 8pm stop = 12hr/day
+ecs_start_hour = 8
+ecs_stop_hour  = 20
+
+# DynamoDB table names — must match app config
+monitors_table = "uptime-monitors"
+checks_table   = "uptime-checks"
