@@ -114,6 +114,13 @@ jobs:
           docker build -t $ECR_NGINX_REPO:$IMAGE_TAG -t $ECR_NGINX_REPO:latest ./nginx
           docker push $ECR_NGINX_REPO:$IMAGE_TAG
           docker push $ECR_NGINX_REPO:latest
+          
+          # Verify latest tag exists
+          aws ecr describe-images \
+            --repository-name $(echo $ECR_NGINX_REPO | cut -d'/' -f2) \
+            --image-ids imageTag=latest \
+            --region $AWS_REGION
+          echo "nginx:latest verified in ECR"
 
   # ── Deploy backend to ECS ────────────────────────────────
   deploy-backend:
