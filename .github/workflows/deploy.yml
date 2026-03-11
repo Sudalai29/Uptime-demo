@@ -65,7 +65,7 @@ jobs:
 
       - name: Build and push API image
         run: |
-          docker build -t $ECR_API_REPO:$IMAGE_TAG -t $ECR_API_REPO:latest ./app
+          docker build -t $ECR_API_REPO:$IMAGE_TAG -t $ECR_API_REPO:latest -f app/Dockerfile .
           docker push $ECR_API_REPO:$IMAGE_TAG
           docker push $ECR_API_REPO:latest
 
