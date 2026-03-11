@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY app/requirements.txt .
 
 # Install ONLY prod deps into an isolated prefix — no pytest, no test tools
 RUN pip install --upgrade pip --quiet && \
@@ -38,7 +38,7 @@ WORKDIR /home/appuser
 COPY --from=builder /install /usr/local
 
 # Copy app source
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser app/ ./app/
 
 USER appuser
 
