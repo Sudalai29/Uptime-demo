@@ -25,24 +25,24 @@ jobs:
 
   # ── Detect what changed ──────────────────────────────────
   # Avoids running backend jobs on frontend-only changes and vice versa
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      backend:  ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-      grafana:  ${{ steps.filter.outputs.grafana }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            backend:
-              - 'app/**'
-            frontend:
-              - 'frontend/**'
-            grafana:
-              - 'grafana/**'
+  # changes:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     backend:  ${{ steps.filter.outputs.backend }}
+  #     frontend: ${{ steps.filter.outputs.frontend }}
+  #     grafana:  ${{ steps.filter.outputs.grafana }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: dorny/paths-filter@v3
+  #       id: filter
+  #       with:
+  #         filters: |
+  #           backend:
+  #             - 'app/**'
+  #           frontend:
+  #             - 'frontend/**'
+  #           grafana:
+  #             - 'grafana/**'
 
   # ── Backend tests ────────────────────────────────────────
   test:
