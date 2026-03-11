@@ -157,7 +157,6 @@ jobs:
     needs: [changes, build-api, build-grafana, build-nginx]
     # Run if api or grafana image was just built
     if: |
-      always() &&
       (needs.build-api.result == 'success' || needs.build-grafana.result == 'success')
     runs-on: ubuntu-latest
     environment: production    # requires manual approval in GitHub if configured
